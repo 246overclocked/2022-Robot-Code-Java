@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean constants. This
  * class should not be used for any other purpose. All constants should be declared globally (i.e. public static). Do
@@ -22,6 +23,18 @@ public final class Constants {
     public static final double SIMPLE_AUTON_SPEED = 0.5; // WEEK0
     public static final double SIMPLE_AUTON_RUNTIME = 4.0; // WEEK0
     public static final double MEDIUM_AUTON_OUTTAKE_RUNTIME = 2.0; // PLACEHOLDER
+
+    public static final double KS_VOLTS = 0.0; // PLACEHOLDER
+    public static final double KV_VOLT_SECONDS_PER_METER = 0.0; // PLACEHOLDER
+    public static final double KA_VOLT_SECONDS_SQUARED_PER_METER = 0.0; // PLACEHOLDER
+
+    public static final double KP_DRIVE_VEL = 0.0; // PLACEHOLDER
+
+    public static final double K_TRACK_WIDTH_METERS = 0.69;
+    public static final double K_MAX_SPEED_METERS_PER_SECOND = 3;
+    public static final double K_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 3;
+    public static final double K_RAMSETE_B = 2;
+    public static final double K_RAMSETE_ZETA = 0.7;
   }
 
   /**
@@ -82,8 +95,8 @@ public final class Constants {
     public static final class IntakeSolenoidChannels {
       public static final int TOP_FORWARD = 0; // PLACEHOLDER
       public static final int TOP_REVERSE = 1; // PLACEHOLDER
-      public static final int BOTTOM_FORWARD = 0; // PLACEHOLDER
-      public static final int BOTTOM_REVERSE = 1; // PLACEHOLDER
+      public static final int BOTTOM_FORWARD = 2; // PLACEHOLDER
+      public static final int BOTTOM_REVERSE = 3; // PLACEHOLDER
     }
 
     public static final int MOTOR_ID = 0; // PLACEHOLDER
@@ -110,14 +123,15 @@ public final class Constants {
   /**
    * Stores constants related to the Tower.
    */
+
   public static final class TowerConstants {
     public static final double SPEED = 1.0; // PLACEHOLDER
 
     public static final class TowerMotorCANIDs {
-      public static final int TOP_LEFT = 0; // PLACEHOLDER
-      public static final int BOTTOM_LEFT = 1; // PLACEHOLDER
-      public static final int TOP_RIGHT = 2; // PLACEHOLDER
-      public static final int BOTTOM_RIGHT = 3; // PLACEHOLDER
+      public static final int TOP_LEFT = 4; // PLACEHOLDER
+      public static final int BOTTOM_LEFT = 5; // PLACEHOLDER
+      public static final int TOP_RIGHT = 6; // PLACEHOLDER
+      public static final int BOTTOM_RIGHT = 7; // PLACEHOLDER
     }
 
     public static final int CURRENT_LIMIT = 25;

@@ -5,8 +5,15 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import com.kauailabs.navx.frc.AHRS;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
@@ -24,6 +31,11 @@ public class DriveBase extends SubsystemBase {
   private NeutralMode motorNeutralMode;
 
   private final DifferentialDrive differentialDrive;
+
+  private final Gyro gyro = new AHRS(SPI.Port.kMXP);
+
+  private final DifferentialDriveOdometry odometry;
+
 
   /**
    * Constructs a DriveBase with a {@link TalonFX} at each of the given CAN IDs.
@@ -63,7 +75,44 @@ public class DriveBase extends SubsystemBase {
             new MotorControllerGroup(leftFrontMotor, leftBackMotor),
             new MotorControllerGroup(rightFrontMotor, rightBackMotor));
 
+    odometry = new DifferentialDriveOdometry(gyro.getRotation2d());
+
+
     CommandScheduler.getInstance().registerSubsystem(this);
+  }
+
+  @Override
+  public void periodic() {
+    // Updates the odometry in the periodic block
+    odometry.update(
+        gyro.getRotation2d(), leftFrontMotor.getSelectedSensorPosition(0),
+        rightFrontMotor.getSelectedSensorPosition(0));
+    // Displays the left and right motor group speeds on SmartDashboard.
+    SmartDashboard.putNumber("Drivetrain Left Speed: ", leftFrontMotor.get());
+    SmartDashboard.putNumber("Drivetrain Right Speed: ", rightFrontMotor.get());
+  }
+
+  /**
+   * Returns the currently-estimated pose of the robot.
+   *
+   * @return The pose.
+   */
+  public Pose2d getPose() {
+    return odometry.getPoseMeters();
+  }
+
+  /**
+   * Resets the odometry to the specified pose.
+   *
+   * @param pose The pose to which to set the odometry.
+   */
+  public void resetOdometry(Pose2d pose) {
+    leftFrontMotor.setSelectedSensorPosition(0);
+    rightFrontMotor.setSelectedSensorPosition(0);
+    leftBackMotor.setSelectedSensorPosition(0);
+    rightBackMotor.setSelectedSensorPosition(0);
+
+    odometry.resetPosition(pose, gyro.getRotation2d());
   }
 
   /**
@@ -112,6 +161,16 @@ public class DriveBase extends SubsystemBase {
   }
 
   /**
+   * Returns the current wheel speeds of the robot.
+   *
+   * @return The current wheel speeds.
+   */
+  public DifferentialDriveWheelSpeeds getWheelSpeeds() {
+    return new DifferentialDriveWheelSpeeds(leftFrontMotor.getSelectedSensorVelocity(),
+        rightFrontMotor.getSelectedSensorVelocity());
+  }
+
+  /**
    * Drives the motors using tank drive controls.
    *
    * @param leftSpeed The left speed
@@ -120,4 +179,51 @@ public class DriveBase extends SubsystemBase {
   public void tankDrive(double leftSpeed, double rightSpeed) {
     differentialDrive.tankDrive(leftSpeed, rightSpeed);
   }
+
+  /**
+   * Controls the left and right sides of the drive with voltages.
+   *
+   * @param leftVolts the specified left output
+   * @param rightVolts the specified right output
+   */
+  public void tankDriveVolts(double leftVolts, double rightVolts) {
+    leftFrontMotor.setVoltage(leftVolts);
+    leftBackMotor.setVoltage(leftVolts);
+    rightFrontMotor.setVoltage(rightVolts);
+    rightBackMotor.setVoltage(rightVolts);
+    differentialDrive.feed();
+  }
+
+  /**
+   * Sets the max output of the drive. Useful for scaling the drive to drive more slowly.
+   *
+   * @param maxOutput the maximum output to which the drive will be constrained
+   */
+  public void setMaxOutput(double maxOutput) {
+    differentialDrive.setMaxOutput(maxOutput);
+  }
+
+  /** Zeroes the heading of the robot. */
+  public void zeroHeading() {
+    gyro.reset();
+  }
+
+  /**
+   * Returns the heading of the robot.
+   *
+   * @return the robot's heading in degrees, from -180 to 180
+   */
+  public double getHeading() {
+    return gyro.getRotation2d().getDegrees();
+  }
+
+  /**
+   * Returns the turn rate of the robot.
+   *
+   * @return The turn rate of the robot, in degrees per second
+   */
+  public double getTurnRate() {
+    return -gyro.getRate();
+  }
+
 }

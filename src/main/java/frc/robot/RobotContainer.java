@@ -4,27 +4,41 @@
 
 package frc.robot;
 
+import java.io.IOException;
+import java.nio.file.Path;
+
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.RamseteController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryUtil;
+import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.AutonConstants;
 import frc.robot.Constants.ClimberConstants;
-import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.IOConstants;
-import frc.robot.Constants.IntakeConstants;
-import frc.robot.Constants.OuttakeConstants;
-import frc.robot.Constants.TowerConstants;
 import frc.robot.Constants.ClimberConstants.ClimberMotorCANIDs;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.DriveConstants.DriveMotorCANIDs;
+import frc.robot.Constants.IOConstants;
 import frc.robot.Constants.IOConstants.DriverAxes;
 import frc.robot.Constants.IOConstants.DriverButtons;
 import frc.robot.Constants.IOConstants.OperatorButtons;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.IntakeConstants.IntakeSolenoidChannels;
+import frc.robot.Constants.OuttakeConstants;
 import frc.robot.Constants.OuttakeConstants.OuttakeMotorCANIDs;
+import frc.robot.Constants.TowerConstants;
 import frc.robot.Constants.TowerConstants.TowerMotorCANIDs;
 import frc.robot.commands.auton.SimpleAutonCommand;
 import frc.robot.commands.climber.RunClimberCommand;
@@ -36,8 +50,10 @@ import frc.robot.commands.outtake.RunOuttakeCommand;
 import frc.robot.commands.tower.RunTowerCommand;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.DriveBase;
+import frc.robot.subsystems.Electronics;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Outtake;
+import frc.robot.subsystems.Pneumatics;
 import frc.robot.subsystems.Tower;
 import overclocked.stl.io.OverclockedController;
 
@@ -70,6 +86,9 @@ public class RobotContainer {
       ClimberMotorCANIDs.LEFT,
       ClimberMotorCANIDs.RIGHT);
 
+  private final Electronics electronics = new Electronics();
+  private final Pneumatics pneumatics = new Pneumatics();
+
   private final OverclockedController driverJoystick = new OverclockedController(IOConstants.DRIVER_JOYSTICK_INDEX);
   private final OverclockedController operatorJoystick = new OverclockedController(IOConstants.OPERATOR_JOYSTICK_INDEX);
 
@@ -80,6 +99,7 @@ public class RobotContainer {
   private final JoystickButton towerButton = operatorJoystick.button(OperatorButtons.TOWER);
   private final JoystickButton climberUpButton = operatorJoystick.button(OperatorButtons.CLIMBER_UP);
   private final JoystickButton climberDownButton = operatorJoystick.button(OperatorButtons.CLIMBER_DOWN);
+
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -144,13 +164,56 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return autonChooser.getSelected();
+    String trajectoryJSON = "paths/Path1.wpilib.json";
+    Trajectory trajectory = new Trajectory();
+
+    try {
+      Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(trajectoryJSON);
+      trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
+    } catch (IOException ex) {
+      DriverStation.reportError("Unable to open trajectory: " + trajectoryJSON, ex.getStackTrace());
+    }
+    DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(AutonConstants.K_TRACK_WIDTH_METERS);
+    var autoVoltageConstraint =
+        new DifferentialDriveVoltageConstraint(
+            new SimpleMotorFeedforward(
+                AutonConstants.KS_VOLTS,
+                AutonConstants.KV_VOLT_SECONDS_PER_METER,
+                AutonConstants.KA_VOLT_SECONDS_SQUARED_PER_METER),
+            kDriveKinematics, 10);
+
+    TrajectoryConfig config =
+        new TrajectoryConfig(
+            AutonConstants.K_MAX_SPEED_METERS_PER_SECOND,
+            AutonConstants.K_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED)
+                .setKinematics(kDriveKinematics)
+                .addConstraint(autoVoltageConstraint);
+
+    RamseteCommand ramseteCommand =
+        new RamseteCommand(
+            trajectory,
+            driveBase::getPose,
+            new RamseteController(AutonConstants.K_RAMSETE_B, AutonConstants.K_RAMSETE_ZETA),
+            new SimpleMotorFeedforward(
+                AutonConstants.KS_VOLTS,
+                AutonConstants.KV_VOLT_SECONDS_PER_METER,
+                AutonConstants.KA_VOLT_SECONDS_SQUARED_PER_METER),
+            kDriveKinematics,
+            driveBase::getWheelSpeeds,
+            new PIDController(AutonConstants.KP_DRIVE_VEL, 0, 0),
+            new PIDController(AutonConstants.KP_DRIVE_VEL, 0, 0),
+            driveBase::tankDriveVolts,
+            driveBase);
+
+    driveBase.resetOdometry(trajectory.getInitialPose());
+
+    return ramseteCommand.andThen(() -> driveBase.tankDriveVolts(0, 0));
   }
 
   /**
-   * Robot.java should run this method when teleop starts. This method should be used to set the
-   * default commands for subsystems while in teleop. If you set a default here, set a corresponding
-   * auton default in setAutonDefaultCommands().
+   * Robot.java should run this method when teleop starts. This method should be used to set the default commands for
+   * subsystems while in teleop. If you set a default here, set a corresponding auton default in
+   * setAutonDefaultCommands().
    */
   public void setTeleopDefaultCommands() {
     driveBase.setDefaultCommand(
@@ -161,9 +224,9 @@ public class RobotContainer {
   }
 
   /**
-   * Robot.java should run this method when auton starts. This method should be used to set the
-   * default commands for subsystems while in auton. If you set a default here, set a corresponding
-   * teleop default in setTeleopDefaultCommands().
+   * Robot.java should run this method when auton starts. This method should be used to set the default commands for
+   * subsystems while in auton. If you set a default here, set a corresponding teleop default in
+   * setTeleopDefaultCommands().
    */
   public void setAutonDefaultCommands() {
     driveBase.setDefaultCommand(new StopDriveCommand(driveBase));

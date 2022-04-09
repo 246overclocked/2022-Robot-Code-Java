@@ -7,6 +7,8 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.CompressorConfigType;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.PneumaticsConstants;
 
@@ -40,6 +42,7 @@ public class Pneumatics extends SubsystemBase {
    */
   public void enableCompressor(double minPressure, double maxPressure) {
     compressor.enableAnalog(minPressure, maxPressure);
+    CommandScheduler.getInstance().registerSubsystem(this);
   }
 
   /**
@@ -75,5 +78,14 @@ public class Pneumatics extends SubsystemBase {
    */
   public void disableCompressor() {
     compressor.disable();
+  }
+
+  @Override
+  /**
+   * Displays the compressor current and stored pressure on SmartDashboard.
+   */
+  public void periodic() {
+    SmartDashboard.putNumber("Compressor Current: ", this.getCompressorCurrent());
+    SmartDashboard.putNumber("Compressor Pressure: ", this.getStoredPressure());
   }
 }
