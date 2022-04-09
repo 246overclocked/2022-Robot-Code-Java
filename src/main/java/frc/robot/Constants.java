@@ -82,8 +82,8 @@ public final class Constants {
     public static final class IntakeSolenoidChannels {
       public static final int TOP_FORWARD = 0; // PLACEHOLDER
       public static final int TOP_REVERSE = 1; // PLACEHOLDER
-      public static final int BOTTOM_FORWARD = 0; // PLACEHOLDER
-      public static final int BOTTOM_REVERSE = 1; // PLACEHOLDER
+      public static final int BOTTOM_FORWARD = 2; // PLACEHOLDER
+      public static final int BOTTOM_REVERSE = 3; // PLACEHOLDER
     }
 
     public static final int MOTOR_ID = 0; // PLACEHOLDER
@@ -110,14 +110,15 @@ public final class Constants {
   /**
    * Stores constants related to the Tower.
    */
+
   public static final class TowerConstants {
     public static final double SPEED = 1.0; // PLACEHOLDER
 
     public static final class TowerMotorCANIDs {
-      public static final int TOP_LEFT = 0; // PLACEHOLDER
-      public static final int BOTTOM_LEFT = 1; // PLACEHOLDER
-      public static final int TOP_RIGHT = 2; // PLACEHOLDER
-      public static final int BOTTOM_RIGHT = 3; // PLACEHOLDER
+      public static final int TOP_LEFT = 4; // PLACEHOLDER
+      public static final int BOTTOM_LEFT = 5; // PLACEHOLDER
+      public static final int TOP_RIGHT = 6; // PLACEHOLDER
+      public static final int BOTTOM_RIGHT = 7; // PLACEHOLDER
     }
 
     public static final int CURRENT_LIMIT = 25;

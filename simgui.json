@@ -1,0 +1,29 @@
+{
+  "HALProvider": {
+    "Other Devices": {
+      "Talon FX[55]/Fwd Limit": {
+        "header": {
+          "open": true
+        }
+      }
+    }
+  },
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/LiveWindow/Climber": "Subsystem",
+      "/LiveWindow/DriveBase": "Subsystem",
+      "/LiveWindow/Electronics": "Subsystem",
+      "/LiveWindow/Intake": "Subsystem",
+      "/LiveWindow/Outtake": "Subsystem",
+      "/LiveWindow/Pneumatics": "Subsystem",
+      "/LiveWindow/Tower": "Subsystem",
+      "/LiveWindow/Ungrouped/DifferentialDrive[1]": "DifferentialDrive",
+      "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
+      "/LiveWindow/Ungrouped/Talon FX [50]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX [51]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon SRX [0]": "Motor Controller",
+      "/SmartDashboard/SendableChooser[0]": "String Chooser"
+    }
+  }
+}

@@ -39,6 +39,8 @@ import frc.robot.subsystems.DriveBase;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Outtake;
 import frc.robot.subsystems.Tower;
+import frc.robot.subsystems.Pneumatics;
+import frc.robot.subsystems.Electronics;
 import overclocked.stl.io.OverclockedController;
 
 /**
@@ -70,6 +72,9 @@ public class RobotContainer {
       ClimberMotorCANIDs.LEFT,
       ClimberMotorCANIDs.RIGHT);
 
+  private final Electronics electronics = new Electronics();
+  private final Pneumatics pneumatics = new Pneumatics();
+
   private final OverclockedController driverJoystick = new OverclockedController(IOConstants.DRIVER_JOYSTICK_INDEX);
   private final OverclockedController operatorJoystick = new OverclockedController(IOConstants.OPERATOR_JOYSTICK_INDEX);
 
@@ -90,7 +95,10 @@ public class RobotContainer {
   }
 
   /**
-   * Use this method to define your button->command mappings.
+   * <<<<<<< HEAD Use this method to define your button->command mappings. Buttons can be created by instantiating a
+   * {@link GenericHID} or one of its subclasses ({@link edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and
+   * then passing it to a {@link edu.wpi.first.wpilibj2.command.button.JoystickButton}. ======= Use this method to
+   * define your button->command mappings. >>>>>>> main
    */
   private void configureButtonBindings() {
     outtakeButton.whileHeld(new RunOuttakeCommand(outtake, OuttakeConstants.SPEED));
@@ -148,9 +156,9 @@ public class RobotContainer {
   }
 
   /**
-   * Robot.java should run this method when teleop starts. This method should be used to set the
-   * default commands for subsystems while in teleop. If you set a default here, set a corresponding
-   * auton default in setAutonDefaultCommands().
+   * Robot.java should run this method when teleop starts. This method should be used to set the default commands for
+   * subsystems while in teleop. If you set a default here, set a corresponding auton default in
+   * setAutonDefaultCommands().
    */
   public void setTeleopDefaultCommands() {
     driveBase.setDefaultCommand(
@@ -161,9 +169,9 @@ public class RobotContainer {
   }
 
   /**
-   * Robot.java should run this method when auton starts. This method should be used to set the
-   * default commands for subsystems while in auton. If you set a default here, set a corresponding
-   * teleop default in setTeleopDefaultCommands().
+   * Robot.java should run this method when auton starts. This method should be used to set the default commands for
+   * subsystems while in auton. If you set a default here, set a corresponding teleop default in
+   * setTeleopDefaultCommands().
    */
   public void setAutonDefaultCommands() {
     driveBase.setDefaultCommand(new StopDriveCommand(driveBase));

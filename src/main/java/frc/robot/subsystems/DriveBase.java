@@ -7,6 +7,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
@@ -119,5 +120,14 @@ public class DriveBase extends SubsystemBase {
    */
   public void tankDrive(double leftSpeed, double rightSpeed) {
     differentialDrive.tankDrive(leftSpeed, rightSpeed);
+  }
+
+  @Override
+  /**
+   * Displays left and right motor group speeds on SmartDashboard.
+   */
+  public void periodic() {
+    SmartDashboard.putNumber("Drivetrain Left Speed: ", leftFrontMotor.get());
+    SmartDashboard.putNumber("Drivetrain Right Speed: ", rightFrontMotor.get());
   }
 }

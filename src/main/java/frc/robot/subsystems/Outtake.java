@@ -4,6 +4,7 @@ package frc.robot.subsystems;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.OuttakeConstants;
@@ -51,4 +52,13 @@ public class Outtake extends SubsystemBase {
     outtakeMotor.set(speed);
     outtakeMotor2.set(speed);
   }
+
+  @Override
+  /**
+   * Displays the outtake motor speed on SmartDashboard.
+   */
+  public void periodic() {
+    SmartDashboard.putNumber("Outtake Speed: ", outtakeMotor.get());
+  }
+
 }
